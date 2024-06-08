@@ -66,7 +66,7 @@ export const login = (req, res) => {
 
     res.cookie("AccessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
     });
 
     return res.status(200).json({ message: "Login successfully", ...otherDetails });
@@ -74,13 +74,13 @@ export const login = (req, res) => {
 };
 
 export const getPosts= (req,res)=>{
-  const q ="select `username`,`title`,`description`,`img`,`date`from users U join post p on u.id=p.uid where p.id=?";
+  const q ="select `username`,`title`,`description`,`img`,`cat`,`date`from users U join post p on u.id=p.uid where p.id=?";
   db.query(q,[req.params.id],(err,data)=>{
     if (err){
       return res.status(500).send(err);
     }
     else{
-      console.log(data[0]);
+      // console.log(data[0]);
       return res.status(200).send(data[0])
     }
   })
@@ -107,4 +107,25 @@ export const getPost= (req,res)=>{
     }
   })
 }
+ export const deletePost=(req,res)=>{
+  const token= req.cookies.AccessToken; 
+  console.log(token);
+  if (!token){
+    return res.status(401).send("Not Authentication")
+  }
+  jwt.verify(token,"jwtkey",(err,info)=>{
+    if(err){
+      return res.status(403).send("Token not verified");
+    }
+    console.log(info);
+    const postId= req.params.id;
+    const q ="delete from post where id=? and uid=?";
+    db.query(q,[postId,info.id],(err,data)=>{
+      if (err){
+        return res.status(403).send("you cannot delete other posts")
+      } 
+      return res.status(200).send("post deleted");
+    })
+  })
+ }
 

@@ -11,8 +11,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors({
-    origin: "*",
-    methods:['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'UPDATE']
+    origin: " http://localhost:3001",
+    credentials:true
 }));
 
 app.use("/app",register)
