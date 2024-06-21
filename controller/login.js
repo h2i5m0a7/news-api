@@ -74,7 +74,7 @@ export const login = (req, res) => {
 };
 
 export const getPosts= (req,res)=>{
-  const q ="select `username`,`title`,`description`,`img`,`cat`,`date`from users U join post p on u.id=p.uid where p.id=?";
+  const q ="select p.id, `username`,`title`,`description`,`img`,`cat`,`date`from users U join post p on u.id=p.uid where p.id=?";
   db.query(q,[req.params.id],(err,data)=>{
     if (err){
       return res.status(500).send(err);
@@ -105,6 +105,51 @@ export const getPost= (req,res)=>{
     else{
       return res.status(200).send(data)
     }
+  })
+}
+export const newPost=(req,res)=>{
+  const token= req.cookies.AccessToken; 
+  console.log(token);
+  if (!token){
+    return res.status(401).send("Not Authentication")
+  }
+  jwt.verify(token,"jwtkey",(err,info)=>{
+    if(err){
+      return res.status(403).send("Token not verified");
+    }
+    const q= "UPDATE post SET `title`=?, `description`=?  ,`img`=?,`cat`=?,`date`=? WHERE id=? AND uid=?"
+    const postId= req.params.id
+    const data=[req.body.title,req.body.description,req.body.img,req.body.cat,req.body.date]
+    db.query(q,[...data,postId,info.id],(err,data)=>{
+      if (err){
+        return res.status(500).send(err)
+      }
+      else{
+        return res.status(200).send("Upadted Succesfully")
+      }
+    })
+  })
+
+}
+export const addPost= (req,res)=>{
+  const token= req.cookies.AccessToken; 
+  console.log(token);
+  if (!token){
+    return res.status(401).send("Not Authentication")
+  }
+  jwt.verify(token,"jwtkey",(err,info)=>{
+    if(err){
+      return res.status(403).send("Token not verified");
+    }
+    const q ="INSERT INTO post (`title`,`description` ,`img`,`uid`,`cat`,`date`) VALUES(?,?,?,?,?,?) ;"
+    db.query(q,[req.body.title,req.body.description,req.body.img,info.id,req.body.cat,req.body.date],(err,data)=>{
+      if (err){
+        return res.status(500).send(err)
+      }
+      else{
+        return res.status(200).send(data)
+      }
+    })
   })
 }
  export const deletePost=(req,res)=>{
